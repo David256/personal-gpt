@@ -19,9 +19,9 @@
     },
     "windows": [
       {
-        "title": "personal-gpt",
-        "width": 800,
-        "height": 600
+        "title": "Personal GPT",
+        "width": 380,
+        "height": 630
       }
     ],
     "security": {
