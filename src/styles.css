@@ -49,6 +49,19 @@ body,
   padding: 1rem;
 }
 
+.h-full {
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
 .center {
   align-items: center;
 }
