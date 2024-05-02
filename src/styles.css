@@ -137,3 +137,12 @@ button {
     opacity: 0;
   }
 }
+
+.raiseMenu {
+  bottom: 1rem;
+  display: flex !important;
+}
+
+.turnTab {
+  transform: rotate(180deg);
+}

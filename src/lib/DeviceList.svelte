@@ -47,8 +47,8 @@
   .dl-tab {
     /* height: 1rem; */
     border-bottom: 1rem solid rgba(144, 81, 230, 0.3);
-    border-left: 11rem solid transparent;
-    border-right: 11rem solid transparent;
+    border-left: 10.5rem solid transparent;
+    border-right: 10.5rem solid transparent;
     cursor: pointer;
     animation-name: lookatme;
     animation-delay: 10s;
@@ -102,16 +102,19 @@
     background-color: rgba(144, 81, 230, 0.1);
     padding: 0.3rem;
     cursor: pointer;
+    overflow-y: hidden;
+    white-space: nowrap;
   }
   .dl-device:hover {
     background-color: rgba(144, 81, 230, 0.2);
     font-weight: 700;
+    overflow-y: scroll;
   }
-  :global(.raiseMenu) {
+  /* :global(.raiseMenu) {
     bottom: 1rem;
     display: flex !important;
   }
   :global(.turnTab) {
     transform: rotate(180deg);
-  }
+  } */
 </style>
