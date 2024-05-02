@@ -20,6 +20,7 @@
     "windows": [
       {
         "title": "Personal GPT",
+        "resizable": false,
         "width": 380,
         "height": 630
       }
@@ -30,7 +31,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "personal-gpt.desktop.app.ordenada.online",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
