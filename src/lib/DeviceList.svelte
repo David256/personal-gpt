@@ -6,9 +6,12 @@
   let tab: HTMLDivElement;
   let content: HTMLDivElement;
 
+  let open = false;
+
   const onTabClick = () => {
     content.classList.toggle("raiseMenu");
     tab.classList.toggle("turnTab");
+    open = !open;
   };
 </script>
 
@@ -19,6 +22,7 @@
     bind:this={tab}
     on:keyup={(e) => e.key === "Enter" && onTabClick()}
     on:click={onTabClick}
+    on:blur={() => open && onTabClick()}
     class="dl-tab"
   ></div>
   <div role="listbox" bind:this={content} class="dl-content">
