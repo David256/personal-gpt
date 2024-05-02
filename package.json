@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "tauri": "WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri"
+    "tauri": "RUST_BACKTRACE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^1"
