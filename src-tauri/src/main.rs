@@ -1,6 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicPtr, Ordering};
 use std::thread;
 
 use chrono::Local;
@@ -11,6 +11,7 @@ static mut FILENAME: String = String::new();
 static mut SAMPLE_RATE: usize = 16000;
 
 static LISTENING: AtomicBool = AtomicBool::new(false);
+static WAS_ERROR: AtomicBool = AtomicBool::new(false);
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -35,12 +36,19 @@ fn start_recording(index: usize) {
             .expect("Failed to initialize pvrecorder");
         recorder.start().expect("Failed to start audio recording");
         LISTENING.store(true, Ordering::SeqCst);
+        WAS_ERROR.store(false, Ordering::SeqCst);
 
         println!("Recording...");
 
         let mut audio_data = Vec::new();
         while LISTENING.load(Ordering::SeqCst) {
-            let frame = recorder.read().expect("Failed to read audio frame");
+            let read = recorder.read();
+            if read.is_err() {
+                WAS_ERROR.store(true, Ordering::SeqCst);
+                LISTENING.store(false, Ordering::SeqCst);
+                break;
+            }
+            let frame = read.unwrap();
             audio_data.extend_from_slice(&frame);
         }
 
@@ -73,6 +81,12 @@ fn stop_recording() -> String {
 }
 
 #[tauri::command]
+fn get_error_message() -> bool {
+    println!("called get_error_message");
+    WAS_ERROR.load(Ordering::SeqCst).clone()
+}
+
+#[tauri::command]
 fn list_devices() -> Vec<String> {
     println!("Getting audio devices...");
 
@@ -94,6 +108,7 @@ fn main() {
             start_recording,
             stop_recording,
             list_devices,
+            get_error_message,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
