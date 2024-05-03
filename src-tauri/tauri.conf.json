@@ -12,6 +12,15 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "all": true
+      },
+      "notification": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": true
