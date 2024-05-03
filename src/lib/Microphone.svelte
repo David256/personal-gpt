@@ -29,6 +29,7 @@
       tabindex="0"
       on:mousedown={onMouseDown}
       on:mouseup={onMouseUp}
+      on:blur={onMouseUp}
     >
       <img src="/microphone.svg" alt="()" />
     </div>
