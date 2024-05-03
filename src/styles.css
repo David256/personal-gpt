@@ -163,3 +163,61 @@ button {
 .turnTab {
   transform: rotate(180deg);
 }
+
+.speaking:nth-child(1) {
+  animation: speaking 1s 0.2s infinite;
+}
+
+.speaking:nth-child(2) {
+  animation: speaking 1s 0.1s infinite;
+}
+
+.speaking:nth-child(3) {
+  animation: speaking 1s 0s infinite;
+}
+
+.speaking:nth-child(4) {
+  animation: speaking 1s 0.1s infinite;
+}
+
+.speaking:nth-child(5) {
+  animation: speaking 1s 0.2s infinite;
+}
+
+.thinking {
+  animation: thinking 2s infinite alternate-reverse;
+}
+
+@keyframes thinking {
+  0% {
+    height: 1.5rem;
+    background-color: #9051e6;
+    filter: drop-shadow(0 0 10px #1aaec8) drop-shadow(0 0 6px #9051e6);
+  }
+
+  100% {
+    height: 1.5rem;
+    background-color: cyan;
+    filter: drop-shadow(0 0 10px #1aaec8) drop-shadow(0 0 6px #9051e6);
+  }
+}
+
+@keyframes speaking {
+  0% {
+    height: 1.5rem;
+    background-color: cyan;
+    filter: drop-shadow(0 0 10px #1aaec8) drop-shadow(0 0 6px #9051e6);
+  }
+
+  50% {
+    height: calc(1.5rem * var(--i));
+    background-color: cyan;
+    filter: drop-shadow(0 0 10px #1aaec8) drop-shadow(0 0 6px #9051e6);
+  }
+
+  100% {
+    height: 1.5rem;
+    background-color: cyan;
+    filter: drop-shadow(0 0 10px #1aaec8) drop-shadow(0 0 6px #9051e6);
+  }
+}
