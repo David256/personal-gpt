@@ -13,8 +13,20 @@
     tab.classList.toggle("turnTab");
     open = !open;
   };
+
+  const handleSelect = (index: number) => {
+    onSelect(index);
+    onClose();
+  };
+
+  const onClose = () => {
+    content.classList.remove("raiseMenu");
+    tab.classList.remove("turnTab");
+    open = false;
+  };
 </script>
 
+<!-- on:blur={() => open && onTabClick()} -->
 <div class="dl-container">
   <div
     role="button"
@@ -22,7 +34,6 @@
     bind:this={tab}
     on:keyup={(e) => e.key === "Enter" && onTabClick()}
     on:click={onTabClick}
-    on:blur={() => open && onTabClick()}
     class="dl-tab"
   ></div>
   <div role="listbox" bind:this={content} class="dl-content">
@@ -33,8 +44,8 @@
         <div
           role="button"
           class={`dl-device ${i === deviceIndex ? "dl-selected" : ""}`}
-          on:click={() => onSelect(i)}
-          on:keyup={(e) => e.key === "Enter" && onSelect(i)}
+          on:click={() => handleSelect(i)}
+          on:keyup={(e) => e.key === "Enter" && handleSelect(i)}
           tabindex={i + 1}
         >
           {device}
