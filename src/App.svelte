@@ -3,9 +3,17 @@
 
   import Microphone from "./lib/Microphone.svelte";
   import DeviceList from "./lib/DeviceList.svelte";
+  import Modal from "./lib/Modal.svelte";
 
   let deviceNames: string[] = [];
   let deviceIndex = 0;
+
+  let wasRecordingError = false;
+
+  let modalMessage = "";
+  let isOpenModal = false;
+  const openModal = () => (isOpenModal = true);
+  const closeModal = () => (isOpenModal = false);
 
   let isRecording = false;
 
@@ -29,7 +37,14 @@
     return result as string[];
   };
 
+  const getErrorMessage = async () => {
+    const result = await invoke("get_error_message");
+    // console.log("error message:", result);
+    return result as boolean;
+  };
+
   const updateDeviceIndex = (index: number) => {
+    console.log("update device index to:", index);
     deviceIndex = index;
   };
 
@@ -37,9 +52,20 @@
     console.log("devices:", names);
     deviceNames = names;
   });
+
+  setInterval(() => {
+    getErrorMessage().then((message) => {
+      if (message !== wasRecordingError) {
+        wasRecordingError = message;
+        modalMessage =
+          "Error during the recording: Cannot read from selected devices";
+        openModal();
+      }
+    });
+  }, 4000);
 </script>
 
-<main class="container">
+<main class="container app-container">
   <div class="row">
     <div class="col center">
       <h1 class="title">Personal GPT</h1>
@@ -56,10 +82,16 @@
       />
     </div>
   </div>
+  <Modal title="Error" open={isOpenModal} onClose={closeModal}
+    >{modalMessage}</Modal
+  >
 </main>
 
 <style>
   .title {
     color: rgb(240, 252, 255);
+  }
+  .app-container {
+    position: relative;
   }
 </style>
