@@ -1,9 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// use async_std::task::JoinHandle;
+use std::error::Error;
+use std::future::IntoFuture;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread::JoinHandle;
 use std::{env, thread};
+use tokio::runtime::{Handle, Runtime};
 
+use async_openai::types::{AudioResponseFormat, CreateTranscriptionRequestArgs};
+use async_openai::Client;
 use chrono::Local;
 
 use pv_recorder::PvRecorderBuilder;
@@ -12,12 +20,47 @@ static mut FILENAME: String = String::new();
 static mut SAMPLE_RATE: usize = 16000;
 
 static LISTENING: AtomicBool = AtomicBool::new(false);
+static SAVED: AtomicBool = AtomicBool::new(false);
 static WAS_ERROR: AtomicBool = AtomicBool::new(false);
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+
+async fn transcribe_srt(filename: String) -> Result<String, Box<dyn Error>> {
+    println!("Will send this file: {}", filename);
+    let client = Client::new();
+    let request = CreateTranscriptionRequestArgs::default()
+        .file(filename)
+        .model("whisper-1")
+        .response_format(AudioResponseFormat::Json)
+        .build()?;
+
+    let response = client.audio().transcribe(request).await?;
+    Ok(response.text)
+}
+
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn speech_to_text(filename: &str) -> String {
+    let path = filename.to_owned();
+
+    let runtime = Arc::new(Runtime::new().unwrap());
+
+    let handle = thread::spawn({
+        let runtime = Arc::clone(&runtime);
+
+        move || {
+            runtime.block_on(async {
+                match transcribe_srt(path).await {
+                    Ok(text) => text,
+                    Err(e) => {
+                        println!("Error AI: {}", e);
+                        String::new()
+                    }
+                }
+            })
+        }
+    });
+
+    handle.join().unwrap()
 }
 
 #[tauri::command]
@@ -51,6 +94,7 @@ fn start_recording(index: Option<usize>) {
         let recorder = _recorder_builder.expect("Failed to initialize pvrecorder");
         recorder.start().expect("Failed to start audio recording");
         LISTENING.store(true, Ordering::SeqCst);
+        SAVED.store(false, Ordering::SeqCst);
         WAS_ERROR.store(false, Ordering::SeqCst);
 
         println!("Recording...");
@@ -85,6 +129,8 @@ fn start_recording(index: Option<usize>) {
                 writer.write_sample(sample).unwrap();
             }
         }
+
+        SAVED.store(true, Ordering::SeqCst);
     });
 }
 
@@ -93,6 +139,10 @@ fn stop_recording() -> String {
     println!("called stop_recording");
 
     LISTENING.store(false, Ordering::SeqCst);
+
+    while !SAVED.load(Ordering::SeqCst) {}
+
+    SAVED.store(false, Ordering::SeqCst);
 
     unsafe { FILENAME.clone() }
 }
@@ -121,10 +171,10 @@ fn list_devices() -> Vec<String> {
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            greet,
             start_recording,
             stop_recording,
             list_devices,
+            speech_to_text,
             get_error_message,
         ])
         .run(tauri::generate_context!())
