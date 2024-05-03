@@ -1,8 +1,22 @@
 <script lang="ts">
   export let title: string;
+  export let open: boolean;
+  export let onClose: () => void;
+
+  let container: HTMLDivElement;
+
+  $: {
+    if (typeof container !== "undefined") {
+      if (open) {
+        container.classList.remove("hidden");
+      } else {
+        container.classList.add("hidden");
+      }
+    }
+  }
 </script>
 
-<div class="modal-container">
+<div bind:this={container} class="modal-container">
   <div class="modal-background">
     <div class="modal-border">
       <div class="modal-body">
@@ -10,7 +24,13 @@
           <div class="modal-header-title">
             {title}
           </div>
-          <span role="button" class="modal-close">&times;</span>
+          <span
+            role="button"
+            tabindex="0"
+            class="modal-close"
+            on:keypress={(e) => e.key === "Enter" && onClose()}
+            on:click={onClose}>&times;</span
+          >
         </div>
         <div class="modal-body-content">
           <slot />
