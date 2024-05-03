@@ -1,7 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::thread;
+use std::{env, thread};
 
 use chrono::Local;
 
@@ -27,7 +28,16 @@ fn start_recording(index: Option<usize>) {
     }
 
     unsafe {
-        FILENAME = Local::now().format("./%Y-%m-%d %H:%M:%S.wav").to_string();
+        let filename = Local::now().format("%Y-%m-%d %H:%M:%S.wav").to_string();
+
+        let temp_dir = env::temp_dir();
+        let mut temp_path = PathBuf::new();
+        temp_path.push(temp_dir);
+        temp_path.push(filename);
+        let abs_path = temp_path.to_string_lossy().to_string();
+        println!("temp_path = {}", abs_path);
+
+        FILENAME = abs_path;
     }
 
     println!("Initializing pvrecorder...");
@@ -68,6 +78,8 @@ fn start_recording(index: Option<usize>) {
                 bits_per_sample: 16,
                 sample_format: hound::SampleFormat::Int,
             };
+            println!("Will save in {}", FILENAME.clone());
+
             let mut writer = hound::WavWriter::create(FILENAME.clone(), spec).unwrap();
             for sample in audio_data {
                 writer.write_sample(sample).unwrap();
