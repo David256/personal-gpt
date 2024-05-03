@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let deviceIndex;
+  export let deviceIndex: number | null;
   export let devices: string[] = [];
   export let onSelect: (index: number) => void = () => {};
 

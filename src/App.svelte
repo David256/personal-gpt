@@ -6,7 +6,7 @@
   import Modal from "./lib/Modal.svelte";
 
   let deviceNames: string[] = [];
-  let deviceIndex = 0;
+  let deviceIndex: number | null = null;
 
   let wasRecordingError = false;
 

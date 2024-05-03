@@ -1,6 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::sync::atomic::{AtomicBool, AtomicPtr, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
 use chrono::Local;
@@ -20,20 +20,25 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn start_recording(index: usize) {
-    println!("called start_recording: {}", index);
+fn start_recording(index: Option<usize>) {
+    match index {
+        Some(i) => println!("called start_recording: {}", i),
+        None => println!("called start_recording: None"),
+    }
 
     unsafe {
-        FILENAME = Local::now().format("%Y-%m-%d %H:%M:%S.wav").to_string();
+        FILENAME = Local::now().format("./%Y-%m-%d %H:%M:%S.wav").to_string();
     }
 
     println!("Initializing pvrecorder...");
 
     thread::spawn(move || {
-        let recorder = PvRecorderBuilder::new(512)
-            .device_index(index as i32)
-            .init()
-            .expect("Failed to initialize pvrecorder");
+        let mut recorder_builder = PvRecorderBuilder::new(512);
+        let _recorder_builder = match index {
+            Some(i) => recorder_builder.device_index(i as i32).init(),
+            None => recorder_builder.init(),
+        };
+        let recorder = _recorder_builder.expect("Failed to initialize pvrecorder");
         recorder.start().expect("Failed to start audio recording");
         LISTENING.store(true, Ordering::SeqCst);
         WAS_ERROR.store(false, Ordering::SeqCst);
@@ -82,7 +87,7 @@ fn stop_recording() -> String {
 
 #[tauri::command]
 fn get_error_message() -> bool {
-    println!("called get_error_message");
+    // println!("called get_error_message");
     WAS_ERROR.load(Ordering::SeqCst).clone()
 }
 
