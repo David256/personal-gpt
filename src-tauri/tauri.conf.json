@@ -16,10 +16,20 @@
         "all": true
       },
       "fs": {
-        "all": true
+        "all": true,
+        "scope": [
+          "$TEMP/*"
+        ]
       },
       "notification": {
         "all": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": [
+          "https://api.openai.com/*"
+        ]
       },
       "shell": {
         "all": false,
