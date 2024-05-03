@@ -1,9 +1,11 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri";
+  import { emit } from "@tauri-apps/api/event";
 
   import Microphone from "./lib/Microphone.svelte";
   import DeviceList from "./lib/DeviceList.svelte";
   import Modal from "./lib/Modal.svelte";
+  import AI from "./lib/AI.svelte";
 
   let deviceNames: string[] = [];
   let deviceIndex: number | null = null;
@@ -29,6 +31,8 @@
     const result = await invoke("stop_recording");
     console.log("stop recording:", result);
     isRecording = false;
+
+    await emit("new-audio", { filename: result });
   };
 
   const requestDeviceNames = async () => {
@@ -49,7 +53,7 @@
   };
 
   requestDeviceNames().then((names) => {
-    console.log("devices:", names);
+    console.log("requested devices:", names);
     deviceNames = names;
   });
 
@@ -62,7 +66,7 @@
         openModal();
       }
     });
-  }, 4000);
+  }, 1000);
 </script>
 
 <main class="container app-container">
@@ -75,6 +79,7 @@
   <div class="row h-full">
     <div class="col p-2 space-between">
       <Microphone {onStartRecording} {onStopRecording} />
+      <AI />
       <DeviceList
         {deviceIndex}
         devices={deviceNames}
