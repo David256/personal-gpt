@@ -36,6 +36,10 @@
 
     console.log("AI:", result);
 
+    const reply = await invoke("reply_as_assistant", { input: result });
+
+    console.log("AI replies:", reply);
+
     isThinking = false;
   });
 </script>

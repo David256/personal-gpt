@@ -2,15 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // use async_std::task::JoinHandle;
 use std::error::Error;
-use std::future::IntoFuture;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread::JoinHandle;
 use std::{env, thread};
-use tokio::runtime::{Handle, Runtime};
 
-use async_openai::types::{AudioResponseFormat, CreateTranscriptionRequestArgs};
+use async_openai::types::{
+    AudioResponseFormat, ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
+    ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs,
+    CreateTranscriptionRequestArgs,
+};
 use async_openai::Client;
 use chrono::Local;
 
@@ -25,6 +25,43 @@ static WAS_ERROR: AtomicBool = AtomicBool::new(false);
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
+async fn reply_chat(input: String) -> Result<String, Box<dyn Error>> {
+    let client = Client::new();
+
+    let request = CreateChatCompletionRequestArgs::default()
+        .max_tokens(3000u16)
+        .model("gpt-3.5-turbo-0613")
+        .messages([
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content("You are a helpful assistant.")
+                .build()?
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(input)
+                .build()?
+                .into(),
+        ])
+        .build()?;
+
+    println!("{}", serde_json::to_string(&request).unwrap());
+
+    let response = client.chat().create(request).await?;
+
+    println!("\nResponse:\n");
+
+    let mut result = String::new();
+
+    for choice in response.choices {
+        println!(
+            "{}: Role: {}  Content: {:?}",
+            choice.index, choice.message.role, choice.message.content
+        );
+        result = choice.message.content.to_owned().unwrap();
+    }
+
+    Ok(result)
+}
+
 async fn transcribe_srt(filename: String) -> Result<String, Box<dyn Error>> {
     println!("Will send this file: {}", filename);
     let client = Client::new();
@@ -36,6 +73,20 @@ async fn transcribe_srt(filename: String) -> Result<String, Box<dyn Error>> {
 
     let response = client.audio().transcribe(request).await?;
     Ok(response.text)
+}
+
+#[tauri::command(async)]
+async fn reply_as_assistant(input: &str) -> Result<String, ()> {
+    let data = match reply_chat(input.to_owned()).await {
+        Ok(text) => text,
+        Err(e) => {
+            println!("Error AI: {}", e);
+            String::new()
+            // Err(())
+        }
+    };
+
+    Ok(data)
 }
 
 #[tauri::command(async)]
@@ -184,6 +235,7 @@ fn main() {
             list_devices,
             speech_to_text,
             get_error_message,
+            reply_as_assistant,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
