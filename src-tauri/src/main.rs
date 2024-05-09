@@ -38,29 +38,37 @@ async fn transcribe_srt(filename: String) -> Result<String, Box<dyn Error>> {
     Ok(response.text)
 }
 
-#[tauri::command]
-fn speech_to_text(filename: &str) -> String {
+#[tauri::command(async)]
+async fn speech_to_text(filename: &str) -> Result<String, ()> {
     let path = filename.to_owned();
 
-    let runtime = Arc::new(Runtime::new().unwrap());
+    // let runtime = Arc::new(Runtime::new().unwrap());
 
-    let handle = thread::spawn({
-        let runtime = Arc::clone(&runtime);
+    // let handle = thread::spawn({
+    //     let runtime = Arc::clone(&runtime);
 
-        move || {
-            runtime.block_on(async {
-                match transcribe_srt(path).await {
-                    Ok(text) => text,
-                    Err(e) => {
-                        println!("Error AI: {}", e);
-                        String::new()
-                    }
-                }
-            })
+    //     move || {
+    //         runtime.block_on(async {
+    //             match transcribe_srt(path).await {
+    //                 Ok(text) => text,
+    //                 Err(e) => {
+    //                     println!("Error AI: {}", e);
+    //                     String::new()
+    //                 }
+    //             }
+    //         })
+    //     }
+    // });
+
+    let transcribed = match transcribe_srt(path).await {
+        Ok(text) => text,
+        Err(e) => {
+            println!("Error AI: {}", e);
+            String::new()
+            // Err(())
         }
-    });
-
-    handle.join().unwrap()
+    };
+    Ok(transcribed)
 }
 
 #[tauri::command]

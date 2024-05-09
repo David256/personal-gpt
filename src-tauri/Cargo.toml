@@ -18,8 +18,6 @@ chrono = "0.4.38"
 hound = "3.5.1"
 pv_recorder = "1.2.2"
 async-openai = "0.20.0"
-async-std = "1.12.0"
-tokio = "1.37.0"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
