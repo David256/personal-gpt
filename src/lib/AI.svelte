@@ -40,6 +40,8 @@
 
     console.log("AI replies:", reply);
 
+    await invoke("speech", { input: reply });
+
     isThinking = false;
   });
 </script>
@@ -55,6 +57,7 @@
 <style>
   .ai-container {
     display: flex;
+    flex-direction: row;
     gap: 2rem;
     width: 100%;
     justify-content: center;
